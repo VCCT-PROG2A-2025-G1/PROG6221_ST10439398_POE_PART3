@@ -1,7 +1,6 @@
 // Start of file: ResponseHandler.cs
-// Purpose: Handles user input, generates responses, manages memory, and detects sentiment.
-// Implements Part 2 requirements: keyword recognition, random responses, conversation flow,
-// memory/recall, sentiment detection, error handling, and code optimization.
+// Purpose: Enhanced response handler with all Part 2 improvements for GUI
+// Implements: keyword recognition, random responses, conversation flow, memory/recall, sentiment detection
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ using System.Linq;
 namespace CybersecurityAwarenessBot
 {
     /// <summary>
-    /// Handles user input, generates responses, manages memory, and detects sentiment.
+    /// Enhanced response handler with memory, sentiment detection, and comprehensive cybersecurity knowledge.
     /// </summary>
     public class ResponseHandler
     {
@@ -26,8 +25,7 @@ namespace CybersecurityAwarenessBot
         public string? LastTopic { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the ResponseHandler class.
-        /// Sets up response variations for various cybersecurity topics.
+        /// Initializes enhanced response handler with comprehensive cybersecurity knowledge.
         /// </summary>
         public ResponseHandler()
         {
@@ -47,10 +45,13 @@ namespace CybersecurityAwarenessBot
                 { "malware", new[] { "malware", "virus", "trojan", "spyware", "ransomware", "infection", "malicious software" } },
                 { "security", new[] { "security", "secure", "safety", "safe", "protect", "protection" } },
                 { "hacker", new[] { "hacker", "hackers", "hacking", "cybercriminal", "attacker", "breach" } },
-                { "update", new[] { "update", "updates", "patch", "patches", "upgrade", "version" } }
+                { "update", new[] { "update", "updates", "patch", "patches", "upgrade", "version" } },
+                { "backup", new[] { "backup", "backups", "copy", "restore", "recovery" } },
+                { "wifi", new[] { "wifi", "wi-fi", "wireless", "network", "hotspot" } },
+                { "social", new[] { "social media", "facebook", "twitter", "instagram", "social engineering" } }
             };
 
-            // Expanded responses with more variety
+            // Expanded responses with more variety and depth
             _responses = new Dictionary<string, List<string>>
             {
                 { "password", new List<string>
@@ -153,6 +154,36 @@ namespace CybersecurityAwarenessBot
                         "Sometimes updates include new security features - take time to explore and enable them."
                     }
                 },
+                { "backup", new List<string>
+                    {
+                        "Follow the 3-2-1 backup rule: 3 copies of data, 2 different media types, 1 offsite backup.",
+                        "Regular backups are your best defense against ransomware attacks and data loss.",
+                        "Test your backups regularly to ensure they work when you need them most.",
+                        "Consider automated cloud backups for important documents and photos.",
+                        "Don't forget to backup your phone data - photos, contacts, and app data can be irreplaceable.",
+                        "Keep at least one backup offline to protect against network-based attacks."
+                    }
+                },
+                { "wifi", new List<string>
+                    {
+                        "Public Wi-Fi networks are convenient but often unsecured - avoid sensitive activities on them.",
+                        "Use a VPN when connecting to public Wi-Fi to encrypt your internet traffic.",
+                        "Turn off auto-connect features to prevent your device from joining unsafe networks automatically.",
+                        "Look for networks that require passwords - open networks are more likely to be compromised.",
+                        "Be wary of networks with suspicious names or those that mimic legitimate businesses.",
+                        "Consider using your phone's hotspot instead of public Wi-Fi for better security."
+                    }
+                },
+                { "social", new List<string>
+                    {
+                        "Social engineering attacks manipulate human psychology to gain access to information or systems.",
+                        "Be skeptical of unsolicited contacts asking for personal or company information.",
+                        "Verify the identity of anyone requesting sensitive information through independent channels.",
+                        "Social media oversharing can provide attackers with information for targeted scams.",
+                        "Be cautious about friend requests from people you don't know personally.",
+                        "Think twice before posting vacation photos in real-time - wait until you're back home."
+                    }
+                },
                 { "how are you", new List<string>
                     {
                         "I'm doing great and ready to help you stay secure online! How can I assist you today?",
@@ -186,18 +217,14 @@ namespace CybersecurityAwarenessBot
         /// <summary>
         /// Sets the user's name for personalized responses.
         /// </summary>
-        /// <param name="name">The user's name.</param>
         public void SetUserName(string name)
         {
             _userName = name;
         }
 
         /// <summary>
-        /// Generates a response based on the user's question, incorporating sentiment and memory.
-        /// Implements keyword recognition, random responses, and sentiment detection.
+        /// Enhanced response generation with sentiment detection and memory.
         /// </summary>
-        /// <param name="question">The user's question.</param>
-        /// <returns>The generated response string.</returns>
         public string GetResponse(string question)
         {
             if (string.IsNullOrWhiteSpace(question))
@@ -259,7 +286,8 @@ namespace CybersecurityAwarenessBot
                 _topicInterestCounts[matchedTopic]++;
 
                 // Update favorite topic based on interest
-                _favoriteTopic = _topicInterestCounts.OrderByDescending(x => x.Value).First().Key;
+                if (_topicInterestCounts.Any())
+                    _favoriteTopic = _topicInterestCounts.OrderByDescending(x => x.Value).First().Key;
 
                 LastTopic = GetTopicDisplayName(matchedTopic);
 
@@ -306,8 +334,6 @@ namespace CybersecurityAwarenessBot
         /// <summary>
         /// Finds matching topic based on keyword recognition.
         /// </summary>
-        /// <param name="question">The normalized question.</param>
-        /// <returns>The matching topic or null if no match found.</returns>
         private string? FindMatchingTopic(string question)
         {
             foreach (var topicKeywords in _keywords)
@@ -323,8 +349,6 @@ namespace CybersecurityAwarenessBot
         /// <summary>
         /// Gets a random response for the specified topic.
         /// </summary>
-        /// <param name="topic">The topic to get a response for.</param>
-        /// <returns>A random response string.</returns>
         private string GetRandomResponse(string topic)
         {
             if (_responses.ContainsKey(topic) && _responses[topic].Count > 0)
@@ -337,8 +361,6 @@ namespace CybersecurityAwarenessBot
         /// <summary>
         /// Gets the display name for a topic.
         /// </summary>
-        /// <param name="topic">The internal topic name.</param>
-        /// <returns>The user-friendly topic name.</returns>
         private string GetTopicDisplayName(string topic)
         {
             return topic switch
@@ -353,6 +375,9 @@ namespace CybersecurityAwarenessBot
                 "security" => "general security",
                 "hacker" => "hacker prevention",
                 "update" => "software updates",
+                "backup" => "data backup",
+                "wifi" => "Wi-Fi security",
+                "social" => "social engineering",
                 _ => topic
             };
         }
@@ -360,7 +385,6 @@ namespace CybersecurityAwarenessBot
         /// <summary>
         /// Gets recent topics from conversation history.
         /// </summary>
-        /// <returns>List of recent topics discussed.</returns>
         private List<string> GetRecentTopics()
         {
             var topics = new List<string>();
@@ -374,8 +398,6 @@ namespace CybersecurityAwarenessBot
         /// <summary>
         /// Generates a default response when no topic matches.
         /// </summary>
-        /// <param name="sentimentResponse">The sentiment-based response prefix.</param>
-        /// <returns>A helpful default response.</returns>
         private string GenerateDefaultResponse(string sentimentResponse)
         {
             var suggestions = new[]
@@ -390,11 +412,8 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Provides a follow-up response based on the last topic discussed.
-        /// Implements conversation flow with follow-up questions.
+        /// Enhanced follow-up response system.
         /// </summary>
-        /// <param name="topic">The last topic discussed.</param>
-        /// <returns>A follow-up response string.</returns>
         public string GetFollowUpResponse(string? topic)
         {
             if (topic == null)
@@ -424,48 +443,6 @@ namespace CybersecurityAwarenessBot
                         "Review your social media privacy settings monthly - platforms often change their default settings!",
                         "Use encrypted messaging apps like Signal for sensitive conversations!"
                     }
-                },
-                { "firewall security", new[]
-                    {
-                        "Want to check if your firewall is working? Use online firewall testing tools like ShieldsUP!",
-                        "Consider both hardware (router) and software firewalls for layered protection!",
-                        "Regularly review your firewall logs to spot potential intrusion attempts!"
-                    }
-                },
-                { "VPN usage", new[]
-                    {
-                        "Pro tip: Some VPNs offer split tunneling, letting you choose which apps use the VPN connection!",
-                        "Always choose a VPN with a strict no-logs policy to ensure your privacy!",
-                        "Remember: Free VPNs often sell your data - invest in a reputable paid service!"
-                    }
-                },
-                { "phishing awareness", new[]
-                    {
-                        "Here's a trick: Hover over links without clicking to see the real destination URL!",
-                        "Enable email security features in your email client to automatically flag suspicious messages!",
-                        "When in doubt, open a new browser tab and navigate to the site directly instead of clicking links!"
-                    }
-                },
-                { "malware protection", new[]
-                    {
-                        "Keep your software updated - many malware attacks exploit known vulnerabilities!",
-                        "Set up automatic backups to cloud storage or external drives to protect against ransomware!",
-                        "Consider using browser extensions that block malicious websites and downloads!"
-                    }
-                },
-                { "general security", new[]
-                    {
-                        "Security is a process, not a product - make it part of your daily digital routine!",
-                        "The 3-2-1 backup rule: 3 copies of important data, 2 different media types, 1 offsite backup!",
-                        "Stay informed about current threats by following cybersecurity news and advisories!"
-                    }
-                },
-                { "gratitude", new[]
-                    {
-                        "Keep that security mindset active! Regular learning is key to staying protected!",
-                        "Remember: You're now better equipped to spot and avoid cyber threats!",
-                        "Share your cybersecurity knowledge with friends and family - security is everyone's responsibility!"
-                    }
                 }
             };
 
@@ -479,11 +456,8 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Detects the user's sentiment based on keywords in the question.
-        /// Implements sentiment detection requirement.
+        /// Enhanced sentiment detection with 5 categories.
         /// </summary>
-        /// <param name="question">The user's question.</param>
-        /// <returns>The detected sentiment as a string.</returns>
         private string DetectSentiment(string question)
         {
             // Worried/Anxious sentiment
@@ -517,8 +491,6 @@ namespace CybersecurityAwarenessBot
         /// <summary>
         /// Gets an appropriate response based on detected sentiment.
         /// </summary>
-        /// <param name="sentiment">The detected sentiment.</param>
-        /// <returns>A sentiment-appropriate response prefix.</returns>
         private string GetSentimentResponse(string sentiment)
         {
             return sentiment switch
