@@ -1,7 +1,7 @@
 ﻿// Start of file: QuizForm.cs
 // Purpose: Complete cybersecurity quiz system with immediate feedback and scoring
 // Implements Part 3 requirements: 15+ questions, true/false & multiple choice, immediate feedback, score tracking
-// FIXED: Null reference exception in event handler setup
+// FIXED: Blank display issue and null reference exceptions
 
 using System;
 using System.Collections.Generic;
@@ -40,7 +40,9 @@ namespace CybersecurityAwarenessBot
         private Button restartQuizButton = null!;
         private Panel resultsPanel = null!;
 
-        // FIXED: Constructor with proper initialization order
+        /// <summary>
+        /// FIXED Constructor with proper form initialization and display setup.
+        /// </summary>
         public QuizForm(ActivityLogger? activityLogger = null)
         {
             _questions = CreateCybersecurityQuestions();
@@ -50,8 +52,45 @@ namespace CybersecurityAwarenessBot
             _currentScore = 0;
             _activityLogger = activityLogger;
 
-            // FIXED: InitializeComponent now handles event setup internally
+            // FIXED: Ensure proper Windows Forms initialization
             InitializeComponent();
+
+            // FIXED: Make sure the form is properly displayed
+            this.Load += QuizForm_Load;
+        }
+
+        /// <summary>
+        /// FIXED: Handle form load event to ensure proper display.
+        /// </summary>
+        private void QuizForm_Load(object? sender, EventArgs e)
+        {
+            // Ensure the form is properly displayed and controls are visible
+            this.Refresh();
+
+            // Make sure start button is visible and enabled
+            if (startQuizButton != null)
+            {
+                startQuizButton.Visible = true;
+                startQuizButton.Enabled = true;
+            }
+
+            // Hide quiz panel initially
+            if (questionPanel != null)
+            {
+                questionPanel.Visible = false;
+            }
+
+            // Hide results panel initially  
+            if (resultsPanel != null)
+            {
+                resultsPanel.Visible = false;
+            }
+
+            // Make sure all header elements are visible
+            if (titleLabel != null) titleLabel.Visible = true;
+            if (questionCounterLabel != null) questionCounterLabel.Visible = true;
+            if (progressBar != null) progressBar.Visible = true;
+            if (scoreLabel != null) scoreLabel.Visible = true;
         }
 
         /// <summary>
@@ -272,16 +311,21 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Initializes all UI components for the quiz form.
-        /// FIXED: Proper initialization order with event handlers set up after all controls are created.
+        /// FIXED: InitializeComponent with explicit control visibility settings and proper layout management.
         /// </summary>
         private void InitializeComponent()
         {
+            // FIXED: Ensure proper form setup
+            this.SuspendLayout();
+
             this.Text = "🧠 Cybersecurity Knowledge Quiz";
             this.Size = new Size(900, 750);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.MinimumSize = new Size(800, 650);
             this.BackColor = Color.FromArgb(248, 249, 250);
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+            this.MinimizeBox = true;
 
             // Create all sections in proper order
             CreateHeaderSection();
@@ -291,10 +335,14 @@ namespace CybersecurityAwarenessBot
 
             // FIXED: Set up event handlers AFTER all controls are created
             SetupEventHandlers();
+
+            // FIXED: Resume layout and force display
+            this.ResumeLayout(true);
+            this.PerformLayout();
         }
 
         /// <summary>
-        /// Creates the header section with title and progress indicators.
+        /// FIXED: CreateHeaderSection with explicit visibility.
         /// </summary>
         private void CreateHeaderSection()
         {
@@ -305,7 +353,8 @@ namespace CybersecurityAwarenessBot
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(0, 123, 255),
                 AutoSize = true,
-                Location = new Point(20, 20)
+                Location = new Point(20, 20),
+                Visible = true // FIXED: Explicit visibility
             };
 
             var instructionLabel = new Label
@@ -314,7 +363,8 @@ namespace CybersecurityAwarenessBot
                 Font = new Font("Segoe UI", 10F),
                 ForeColor = Color.FromArgb(108, 117, 125),
                 AutoSize = true,
-                Location = new Point(20, 55)
+                Location = new Point(20, 55),
+                Visible = true // FIXED: Explicit visibility
             };
 
             // Progress section
@@ -323,7 +373,8 @@ namespace CybersecurityAwarenessBot
                 Text = $"Question 1 of {_questions.Count}",
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 Location = new Point(20, 90),
-                Size = new Size(200, 25)
+                Size = new Size(200, 25),
+                Visible = true // FIXED: Explicit visibility
             };
 
             progressBar = new ProgressBar
@@ -333,7 +384,8 @@ namespace CybersecurityAwarenessBot
                 Minimum = 0,
                 Maximum = _questions.Count,
                 Value = 0,
-                Style = ProgressBarStyle.Continuous
+                Style = ProgressBarStyle.Continuous,
+                Visible = true // FIXED: Explicit visibility
             };
 
             scoreLabel = new Label
@@ -342,7 +394,8 @@ namespace CybersecurityAwarenessBot
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(40, 167, 69),
                 Location = new Point(650, 90),
-                Size = new Size(100, 25)
+                Size = new Size(100, 25),
+                Visible = true // FIXED: Explicit visibility
             };
 
             this.Controls.AddRange(new Control[] {
@@ -361,7 +414,7 @@ namespace CybersecurityAwarenessBot
                 Size = new Size(840, 450),
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White,
-                Visible = false
+                Visible = false // Initially hidden
             };
 
             questionLabel = new Label
@@ -435,7 +488,7 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Creates the control section with start/restart buttons.
+        /// FIXED: CreateControlSection with explicit visibility and better positioning.
         /// </summary>
         private void CreateControlSection()
         {
@@ -447,7 +500,10 @@ namespace CybersecurityAwarenessBot
                 BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold)
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                Visible = true, // FIXED: Explicit visibility
+                Enabled = true, // FIXED: Explicit enabled state
+                UseVisualStyleBackColor = false
             };
 
             restartQuizButton = new Button
@@ -459,10 +515,24 @@ namespace CybersecurityAwarenessBot
                 ForeColor = Color.Black,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                Visible = false
+                Visible = false, // Initially hidden
+                UseVisualStyleBackColor = false
             };
 
-            this.Controls.AddRange(new Control[] { startQuizButton, restartQuizButton });
+            // FIXED: Add description label to make the form more informative
+            var descriptionLabel = new Label
+            {
+                Text = "Click 'Start Quiz' to begin your cybersecurity knowledge assessment.\n" +
+                       "This comprehensive quiz covers 18 topics including passwords, phishing,\n" +
+                       "malware protection, VPNs, and social engineering.",
+                Location = new Point(20, 130),
+                Size = new Size(850, 80),
+                Font = new Font("Segoe UI", 11F),
+                ForeColor = Color.FromArgb(73, 80, 87),
+                Visible = true
+            };
+
+            this.Controls.AddRange(new Control[] { startQuizButton, restartQuizButton, descriptionLabel });
         }
 
         /// <summary>
@@ -482,7 +552,6 @@ namespace CybersecurityAwarenessBot
 
         /// <summary>
         /// Sets up all event handlers with null checking.
-        /// FIXED: Added comprehensive null checks to prevent NullReferenceException.
         /// </summary>
         private void SetupEventHandlers()
         {
@@ -508,29 +577,48 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Starts a new quiz session.
+        /// FIXED: StartQuiz_Click with better state management.
         /// </summary>
         private void StartQuiz_Click(object? sender, EventArgs e)
         {
-            _currentQuestionIndex = 0;
-            _currentScore = 0;
-            _quizStartTime = DateTime.Now;
-
-            // Shuffle questions for variety
-            for (int i = _questions.Count - 1; i > 0; i--)
+            try
             {
-                int j = _random.Next(i + 1);
-                (_questions[i], _questions[j]) = (_questions[j], _questions[i]);
+                _currentQuestionIndex = 0;
+                _currentScore = 0;
+                _quizStartTime = DateTime.Now;
+
+                // Shuffle questions for variety
+                for (int i = _questions.Count - 1; i > 0; i--)
+                {
+                    int j = _random.Next(i + 1);
+                    (_questions[i], _questions[j]) = (_questions[j], _questions[i]);
+                }
+
+                // FIXED: Ensure proper visibility state changes
+                if (startQuizButton != null)
+                    startQuizButton.Visible = false;
+
+                if (restartQuizButton != null)
+                    restartQuizButton.Visible = true;
+
+                if (questionPanel != null)
+                    questionPanel.Visible = true;
+
+                if (resultsPanel != null)
+                    resultsPanel.Visible = false;
+
+                // FIXED: Force form to refresh and show changes
+                this.Refresh();
+
+                ShowCurrentQuestion();
+
+                _activityLogger?.LogActivity("Quiz", "Quiz started", $"Started quiz with {_questions.Count} questions");
             }
-
-            startQuizButton.Visible = false;
-            questionPanel.Visible = true;
-            restartQuizButton.Visible = true;
-            resultsPanel.Visible = false;
-
-            ShowCurrentQuestion();
-
-            _activityLogger?.LogActivity("Quiz", "Quiz started", $"Started quiz with {_questions.Count} questions");
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error starting quiz: {ex.Message}", "Quiz Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -548,55 +636,84 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Displays the current question with options.
+        /// FIXED: ShowCurrentQuestion with better error handling.
         /// </summary>
         private void ShowCurrentQuestion()
         {
-            if (_currentQuestionIndex >= _questions.Count)
+            try
             {
-                ShowQuizResults();
-                return;
+                if (_currentQuestionIndex >= _questions.Count)
+                {
+                    ShowQuizResults();
+                    return;
+                }
+
+                var question = _questions[_currentQuestionIndex];
+
+                // Update progress - FIXED: Add null checks
+                if (questionCounterLabel != null)
+                    questionCounterLabel.Text = $"Question {_currentQuestionIndex + 1} of {_questions.Count}";
+
+                if (progressBar != null)
+                    progressBar.Value = _currentQuestionIndex;
+
+                if (scoreLabel != null)
+                    scoreLabel.Text = $"Score: {_currentScore}/{_currentQuestionIndex}";
+
+                // Display question - FIXED: Add null check
+                if (questionLabel != null)
+                    questionLabel.Text = $"Q{_currentQuestionIndex + 1}: {question.Text}";
+
+                // Clear previous answers
+                if (answersPanel != null)
+                {
+                    answersPanel.Controls.Clear();
+
+                    // Create answer options
+                    for (int i = 0; i < question.Options.Length; i++)
+                    {
+                        var radioButton = new RadioButton
+                        {
+                            Text = question.Options[i],
+                            Location = new Point(20, i * 40 + 20),
+                            Size = new Size(750, 35),
+                            Font = new Font("Segoe UI", 11F),
+                            Tag = i,
+                            ForeColor = Color.FromArgb(73, 80, 87),
+                            Visible = true
+                        };
+
+                        radioButton.CheckedChanged += (s, e) =>
+                        {
+                            if (submitAnswerButton != null)
+                                submitAnswerButton.Enabled = answersPanel.Controls.OfType<RadioButton>().Any(rb => rb.Checked);
+                        };
+
+                        answersPanel.Controls.Add(radioButton);
+                    }
+                }
+
+                // Reset button states - FIXED: Add null checks
+                if (submitAnswerButton != null)
+                {
+                    submitAnswerButton.Enabled = false;
+                    submitAnswerButton.Visible = true;
+                }
+
+                if (nextQuestionButton != null)
+                    nextQuestionButton.Visible = false;
+
+                if (feedbackPanel != null)
+                    feedbackPanel.Visible = false;
+
+                // FIXED: Force refresh to show changes
+                this.Refresh();
             }
-
-            var question = _questions[_currentQuestionIndex];
-
-            // Update progress
-            questionCounterLabel.Text = $"Question {_currentQuestionIndex + 1} of {_questions.Count}";
-            progressBar.Value = _currentQuestionIndex;
-            scoreLabel.Text = $"Score: {_currentScore}/{_currentQuestionIndex}";
-
-            // Display question
-            questionLabel.Text = $"Q{_currentQuestionIndex + 1}: {question.Text}";
-
-            // Clear previous answers
-            answersPanel.Controls.Clear();
-
-            // Create answer options
-            for (int i = 0; i < question.Options.Length; i++)
+            catch (Exception ex)
             {
-                var radioButton = new RadioButton
-                {
-                    Text = question.Options[i],
-                    Location = new Point(20, i * 40 + 20),
-                    Size = new Size(750, 35),
-                    Font = new Font("Segoe UI", 11F),
-                    Tag = i,
-                    ForeColor = Color.FromArgb(73, 80, 87)
-                };
-
-                radioButton.CheckedChanged += (s, e) =>
-                {
-                    submitAnswerButton.Enabled = answersPanel.Controls.OfType<RadioButton>().Any(rb => rb.Checked);
-                };
-
-                answersPanel.Controls.Add(radioButton);
+                MessageBox.Show($"Error displaying question: {ex.Message}", "Display Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            // Reset button states
-            submitAnswerButton.Enabled = false;
-            submitAnswerButton.Visible = true;
-            nextQuestionButton.Visible = false;
-            feedbackPanel.Visible = false;
         }
 
         /// <summary>
