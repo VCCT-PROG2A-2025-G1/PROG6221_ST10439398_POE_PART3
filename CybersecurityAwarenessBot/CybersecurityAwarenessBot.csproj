@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
 	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net8.0</TargetFramework>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 		<WarningsAsErrors />
 		<WarningsNotAsErrors>CA1416</WarningsNotAsErrors>
@@ -12,5 +14,7 @@
 	<ItemGroup>
 		<PackageReference Include="NAudio" Version="2.2.1" />
 		<PackageReference Include="System.Speech" Version="8.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
+
 </Project>
