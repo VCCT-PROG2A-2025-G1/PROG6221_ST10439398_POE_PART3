@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Start of file: MainForm.cs
+// Purpose: Complete GUI implementation with enhanced NLP, task management, quiz system, and activity logging
+// Implements all Part 3 requirements with integration of Parts 1 & 2
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -13,6 +17,8 @@ namespace CybersecurityAwarenessBot
         private readonly ActivityLogger _activityLogger;
         private readonly AudioPlayer _audioPlayer;
         private readonly TtsHelper? _ttsHelper;
+        private readonly ResponseHandler _responseHandler;
+        private readonly EnhancedNlpHandler _nlpHandler;
         private string? _userName;
 
         private TabControl mainTabControl = null!;
@@ -20,17 +26,22 @@ namespace CybersecurityAwarenessBot
         private TabPage tasksTabPage = null!;
         private TabPage quizTabPage = null!;
         private TabPage activityTabPage = null!;
+        private TabPage nlpInsightsTabPage = null!;
 
         private RichTextBox chatDisplay = null!;
         private TextBox chatInput = null!;
         private Button sendButton = null!;
         private Button clearChatButton = null!;
+        private Label nlpStatusLabel = null!;
+        private RichTextBox nlpInsightsDisplay = null!;
 
         public MainForm()
         {
             _taskManager = new FullTaskManager();
             _activityLogger = new ActivityLogger();
             _audioPlayer = new AudioPlayer();
+            _responseHandler = new ResponseHandler();
+            _nlpHandler = new EnhancedNlpHandler(_activityLogger);
 
             // Initialize TTS with simple approach
             try
@@ -52,10 +63,10 @@ namespace CybersecurityAwarenessBot
 
         private void InitializeComponent()
         {
-            this.Text = "🛡️ Cybersecurity Awareness Bot v3.0";
-            this.Size = new Size(1200, 800);
+            this.Text = "🛡️ Cybersecurity Awareness Bot v3.0 - Enhanced NLP";
+            this.Size = new Size(1400, 900);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.MinimumSize = new Size(1000, 600);
+            this.MinimumSize = new Size(1200, 700);
 
             mainTabControl = new TabControl
             {
@@ -67,15 +78,19 @@ namespace CybersecurityAwarenessBot
             tasksTabPage = new TabPage("📋 Tasks");
             quizTabPage = new TabPage("🧠 Quiz");
             activityTabPage = new TabPage("📊 Activity Log");
+            nlpInsightsTabPage = new TabPage("🔍 NLP Insights");
 
             mainTabControl.TabPages.AddRange(new TabPage[] {
-                chatTabPage, tasksTabPage, quizTabPage, activityTabPage
+                chatTabPage, tasksTabPage, quizTabPage, activityTabPage, nlpInsightsTabPage
             });
 
             this.Controls.Add(mainTabControl);
 
             InitializeChatTab();
-            InitializeOtherTabs();
+            InitializeTasksTab();
+            InitializeQuizTab();
+            InitializeActivityTab();
+            InitializeNlpInsightsTab();
         }
 
         private void InitializeChatTab()
@@ -91,6 +106,26 @@ namespace CybersecurityAwarenessBot
                 BorderStyle = BorderStyle.FixedSingle
             };
 
+            // NLP Status Panel
+            var nlpStatusPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 40,
+                BackColor = Color.FromArgb(220, 248, 198),
+                Padding = new Padding(10, 5, 10, 5)
+            };
+
+            nlpStatusLabel = new Label
+            {
+                Dock = DockStyle.Fill,
+                Text = "🤖 Enhanced NLP Active - Advanced message understanding enabled",
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(34, 139, 34),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            nlpStatusPanel.Controls.Add(nlpStatusLabel);
+
             var inputPanel = new Panel
             {
                 Dock = DockStyle.Bottom,
@@ -105,7 +140,8 @@ namespace CybersecurityAwarenessBot
                 Font = new Font("Segoe UI", 11F),
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical,
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.FixedSingle,
+                PlaceholderText = "Ask about cybersecurity, request tasks, or say 'start quiz'..."
             };
 
             var buttonPanel = new Panel
@@ -147,17 +183,18 @@ namespace CybersecurityAwarenessBot
             };
 
             welcomePanel.Controls.Add(chatDisplay);
-            chatTabPage.Controls.AddRange(new Control[] { inputPanel, welcomePanel });
+            chatTabPage.Controls.AddRange(new Control[] { nlpStatusPanel, inputPanel, welcomePanel });
         }
 
-        private void InitializeOtherTabs()
+        private void InitializeTasksTab()
         {
-            // Initialize Tasks tab
             var taskPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
             tasksTabPage.Controls.Add(taskPanel);
             _taskManager.InitializeTaskInterface(taskPanel, _activityLogger);
+        }
 
-            // Initialize Quiz tab
+        private void InitializeQuizTab()
+        {
             var quizPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
 
             var quizButton = new Button
@@ -195,39 +232,66 @@ namespace CybersecurityAwarenessBot
 
             quizPanel.Controls.AddRange(new Control[] { quizButton, quizDescription });
             quizTabPage.Controls.Add(quizPanel);
+        }
 
-            // Initialize Activity Log tab
+        private void InitializeActivityTab()
+        {
             var activityPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
 
-            var activityTitle = new Label
+            var activityViewer = new ActivityLogViewer(_activityLogger);
+            activityViewer.InitializeActivityInterface(activityPanel);
+
+            activityTabPage.Controls.Add(activityPanel);
+        }
+
+        private void InitializeNlpInsightsTab()
+        {
+            var nlpPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
+
+            var titleLabel = new Label
             {
-                Text = "📊 Activity Log & Chat History",
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(0, 123, 255),
-                AutoSize = true,
-                Location = new Point(10, 10)
+                Text = "🔍 Natural Language Processing Insights",
+                Location = new Point(10, 10),
+                Size = new Size(400, 30),
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(0, 123, 255)
             };
 
-            var activityList = new ListBox
+            var infoLabel = new Label
             {
+                Text = "This tab shows detailed analysis of your messages using advanced NLP techniques.",
                 Location = new Point(10, 50),
-                Size = new Size(760, 400),
+                Size = new Size(600, 20),
+                Font = new Font("Segoe UI", 10F),
+                ForeColor = Color.FromArgb(73, 80, 87)
+            };
+
+            nlpInsightsDisplay = new RichTextBox
+            {
+                Location = new Point(10, 80),
+                Size = new Size(800, 500),
+                ReadOnly = true,
+                BackColor = Color.FromArgb(248, 249, 250),
                 Font = new Font("Consolas", 9F),
-                BackColor = Color.White,
+                ScrollBars = RichTextBoxScrollBars.Vertical,
                 BorderStyle = BorderStyle.FixedSingle
             };
 
-            var instructionLabel = new Label
+            var clearInsightsButton = new Button
             {
-                Text = "💡 This log tracks all your interactions: chat messages, tasks created/completed, quiz attempts, and NLP detections.",
-                Location = new Point(10, 460),
-                Size = new Size(760, 40),
-                Font = new Font("Segoe UI", 9F),
-                ForeColor = Color.FromArgb(108, 117, 125)
+                Text = "Clear Insights",
+                Location = new Point(10, 590),
+                Size = new Size(120, 30),
+                BackColor = Color.FromArgb(220, 53, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold)
             };
 
-            activityPanel.Controls.AddRange(new Control[] { activityTitle, activityList, instructionLabel });
-            activityTabPage.Controls.Add(activityPanel);
+            clearInsightsButton.Click += (s, e) => nlpInsightsDisplay.Clear();
+
+            nlpPanel.Controls.AddRange(new Control[] { titleLabel, infoLabel, nlpInsightsDisplay, clearInsightsButton });
+            nlpInsightsTabPage.Controls.Add(nlpPanel);
         }
 
         private void SetupEventHandlers()
@@ -255,7 +319,7 @@ namespace CybersecurityAwarenessBot
         private async Task InitializeBotSequence()
         {
             // Show welcome message
-            AddSystemMessage("🛡️ Cybersecurity Awareness Bot v3.0", Color.FromArgb(0, 123, 255));
+            AddSystemMessage("🛡️ Cybersecurity Awareness Bot v3.0 - Enhanced NLP", Color.FromArgb(0, 123, 255));
             await Task.Delay(500);
 
             // Play greeting audio
@@ -264,15 +328,19 @@ namespace CybersecurityAwarenessBot
             // Get user name
             await GetUserName();
 
+            // Set user name in response handler
+            _responseHandler.SetUserName(_userName ?? "User");
+
             // Show personalized greeting
-            var greetingMessage = $"Hello, {_userName}! I'm here to help with cybersecurity questions.";
+            var greetingMessage = $"Hello, {_userName}! I'm now powered by advanced NLP for better understanding of your cybersecurity needs!";
             AddBotMessage(greetingMessage);
 
             // Log initial interaction
-            _activityLogger.LogActivity("Chat", "Session started", $"User {_userName} started a new session");
+            _activityLogger.LogActivity("Chat", "Session started", $"User {_userName} started a new session with Enhanced NLP");
 
             // Show main prompt
-            var promptMessage = "Ask me a question about cybersecurity, or try commands like 'start quiz' or 'add task'!";
+            var promptMessage = "Try asking about cybersecurity topics, saying 'start quiz', 'add task', or 'remind me to update my passwords'! " +
+                               "Check the NLP Insights tab to see how I understand your messages.";
             AddBotMessage(promptMessage);
         }
 
@@ -280,8 +348,8 @@ namespace CybersecurityAwarenessBot
         {
             using var nameForm = new Form
             {
-                Text = "🛡️ Welcome!",
-                Size = new Size(400, 200),
+                Text = "🛡️ Welcome to Enhanced NLP Bot!",
+                Size = new Size(450, 250),
                 StartPosition = FormStartPosition.CenterParent,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MaximizeBox = false,
@@ -290,31 +358,41 @@ namespace CybersecurityAwarenessBot
 
             var label = new Label
             {
-                Text = "Please enter your name:",
+                Text = "Welcome to the Enhanced NLP Cybersecurity Bot!\nPlease enter your name to get started:",
                 Location = new Point(20, 20),
-                Size = new Size(350, 30),
+                Size = new Size(400, 50),
                 Font = new Font("Segoe UI", 10F)
             };
 
             var textBox = new TextBox
             {
-                Location = new Point(20, 60),
-                Size = new Size(340, 25),
+                Location = new Point(20, 80),
+                Size = new Size(390, 25),
                 Font = new Font("Segoe UI", 10F)
             };
 
             var okButton = new Button
             {
                 Text = "Start Learning!",
-                Location = new Point(200, 100),
-                Size = new Size(100, 30),
+                Location = new Point(250, 130),
+                Size = new Size(120, 35),
                 DialogResult = DialogResult.OK,
                 BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold)
             };
 
-            nameForm.Controls.AddRange(new Control[] { label, textBox, okButton });
+            var featuresLabel = new Label
+            {
+                Text = "✨ New in v3.0: Advanced intent detection, entity extraction, and phrase analysis!",
+                Location = new Point(20, 175),
+                Size = new Size(400, 30),
+                Font = new Font("Segoe UI", 9F, FontStyle.Italic),
+                ForeColor = Color.FromArgb(0, 123, 255)
+            };
+
+            nameForm.Controls.AddRange(new Control[] { label, textBox, okButton, featuresLabel });
             nameForm.AcceptButton = okButton;
 
             while (true)
@@ -345,6 +423,9 @@ namespace CybersecurityAwarenessBot
             AddUserMessage(message);
             _activityLogger.LogActivity("Chat", "User message", message);
 
+            // Update NLP status
+            UpdateNlpStatus("Processing...");
+
             // Handle exit
             if (message.ToLower() == "exit")
             {
@@ -361,180 +442,346 @@ namespace CybersecurityAwarenessBot
                 return;
             }
 
-            // Check for quiz commands
-            if (await ProcessQuizCommands(message))
-                return;
+            // Process with Enhanced NLP
+            var nlpResult = _nlpHandler.ProcessMessage(message);
 
-            // Simple response system (we'll enhance this later)
-            var response = GetSimpleResponse(message);
+            // Display NLP insights
+            DisplayNlpInsights(nlpResult);
+
+            // Update NLP status with results
+            UpdateNlpStatus($"Intent: {nlpResult.Intent} | Confidence: {nlpResult.Confidence:P1} | Topics: {string.Join(", ", nlpResult.Topics)}");
+
+            var response = await ProcessNlpResult(nlpResult, message);
+
             AddBotMessage(response);
-
-            _activityLogger.LogActivity("Chat", "Bot response", "Simple response provided");
+            _activityLogger.LogActivity("Chat", "Bot response", "Enhanced NLP response provided");
         }
 
-        // Fix for CS1503: Argument 1: cannot convert from 'CybersecurityAwarenessBot.ActivityLogger' to 'CybersecurityAwarenessBot.SimpleActivityLogger?'
-
-        // Update the constructor call for QuizForm to use a compatible type.
-        // Assuming SimpleActivityLogger is a simplified version of ActivityLogger, we need to create an instance of SimpleActivityLogger and pass it.
-
-        private async Task<bool> ProcessQuizCommands(string message)
+        private async Task<string> ProcessNlpResult(NlpResult nlpResult, string originalMessage)
         {
-            var lowerMessage = message.ToLower();
-            var quizKeywords = new[] { "quiz", "test", "questions", "challenge", "game", "start quiz" };
-
-            if (quizKeywords.Any(keyword => lowerMessage.Contains(keyword)))
+            // Handle specific intents
+            switch (nlpResult.Intent)
             {
-                mainTabControl.SelectedTab = quizTabPage;
-                AddBotMessage("Let's test your cybersecurity knowledge! I've switched you to the Quiz tab. Click the quiz button to begin!");
+                case "create_task":
+                case "set_reminder":
+                    return await HandleTaskIntent(nlpResult, originalMessage);
 
-                _activityLogger.LogActivity("NLP", "Quiz command detected", message);
+                case "start_quiz":
+                    return HandleQuizIntent();
 
-                if (lowerMessage.Contains("start quiz") || lowerMessage.Contains("begin quiz"))
-                {
-                    // Create a SimpleActivityLogger instance and pass it to QuizForm
-                    var simpleActivityLogger = new SimpleActivityLogger();
-                    var quizForm = new QuizForm(simpleActivityLogger);
-                    quizForm.Show();
-                }
+                case "information_request":
+                case "help_request":
+                    return HandleInformationRequest(nlpResult, originalMessage);
 
-                return true;
+                case "memory_recall":
+                    return HandleMemoryRecall(nlpResult, originalMessage);
+
+                case "security_assessment":
+                    return HandleSecurityAssessment(nlpResult);
+
+                case "quiz_results":
+                    return HandleQuizResults();
+
+                default:
+                    // Use enhanced response with NLP context
+                    var baseResponse = _responseHandler.GetResponse(originalMessage);
+
+                    // Add NLP insights if confidence is high
+                    if (nlpResult.Confidence > 0.7 && nlpResult.Topics.Any())
+                    {
+                        var topicInfo = $"\n\n🔍 I detected you're interested in: {string.Join(", ", nlpResult.Topics)}";
+                        if (nlpResult.SuggestedActions.Any())
+                        {
+                            topicInfo += $"\n💡 Suggested actions: {string.Join(", ", nlpResult.SuggestedActions)}";
+                        }
+                        return baseResponse + topicInfo;
+                    }
+
+                    return baseResponse;
             }
-            return false;
         }
 
-        private string GetSimpleResponse(string message)
+        private async Task<string> HandleTaskIntent(NlpResult nlpResult, string originalMessage)
+        {
+            // Extract task information from entities and message
+            var taskTitle = ExtractTaskTitle(originalMessage, nlpResult);
+            var timeEntities = nlpResult.Entities.Where(e => e.Type == "TIME").ToList();
+
+            // Switch to tasks tab
+            mainTabControl.SelectedTab = tasksTabPage;
+
+            // Pre-fill task form if we extracted meaningful information
+            if (!string.IsNullOrEmpty(taskTitle))
+            {
+                var timeInfo = timeEntities.Any() ? $" (Time detected: {string.Join(", ", timeEntities.Select(e => e.Value))})" : "";
+                _taskManager.PreFillTaskForm(taskTitle, originalMessage);
+                return $"I've switched you to the Tasks tab and pre-filled a task: '{taskTitle}'{timeInfo}. You can adjust the details and set a reminder time!";
+            }
+            else
+            {
+                return "I've switched you to the Tasks tab where you can create a new cybersecurity task with reminders!";
+            }
+        }
+
+        private string HandleQuizIntent()
+        {
+            mainTabControl.SelectedTab = quizTabPage;
+            return "Let's test your cybersecurity knowledge! I've switched you to the Quiz tab. Click the quiz button to begin your assessment!";
+        }
+
+        private string HandleInformationRequest(NlpResult nlpResult, string originalMessage)
+        {
+            var response = _responseHandler.GetResponse(originalMessage);
+
+            // Add context based on detected topics
+            if (nlpResult.Topics.Any())
+            {
+                var topicContext = $"\n\n📚 Based on your question about {string.Join(" and ", nlpResult.Topics.Take(2))}, " +
+                                 "I can provide more specific information if you need it!";
+                response += topicContext;
+            }
+
+            return response;
+        }
+
+        private string HandleMemoryRecall(NlpResult nlpResult, string originalMessage)
+        {
+            // Check activity log for relevant past interactions
+            var recentActivities = _activityLogger.GetRecentActivities(10);
+            var relevantActivities = recentActivities.Where(a =>
+                nlpResult.Topics.Any(topic => a.Details.Contains(topic, StringComparison.OrdinalIgnoreCase)))
+                .Take(3).ToList();
+
+            if (relevantActivities.Any())
+            {
+                var memoryResponse = "Here's what I remember from our recent conversations:\n\n";
+                foreach (var activity in relevantActivities)
+                {
+                    memoryResponse += $"• {activity.Timestamp:HH:mm} - {activity.Category}: {activity.Details}\n";
+                }
+                return memoryResponse;
+            }
+
+            return "I don't have specific memory of that topic from our recent conversations, but I'm here to help with any cybersecurity questions you have!";
+        }
+
+        private string HandleSecurityAssessment(NlpResult nlpResult)
+        {
+            var response = "Let me help assess that security concern. ";
+
+            // Check for specific security entities
+            var emailEntities = nlpResult.Entities.Where(e => e.Type == "EMAIL").ToList();
+            var urlEntities = nlpResult.Entities.Where(e => e.Type == "URL").ToList();
+            var ipEntities = nlpResult.Entities.Where(e => e.Type == "IP_ADDRESS").ToList();
+
+            if (emailEntities.Any())
+            {
+                response += "⚠️ I noticed you mentioned an email address. Be cautious about sharing personal email addresses and always verify the sender's identity. ";
+            }
+
+            if (urlEntities.Any())
+            {
+                response += "🔗 I detected a URL in your message. Always verify links before clicking - hover over them to see the real destination and check for suspicious domains. ";
+            }
+
+            if (ipEntities.Any())
+            {
+                response += "🌐 I found an IP address in your message. Be careful when connecting to unfamiliar IP addresses, especially on public networks. ";
+            }
+
+            // Add topic-specific advice
+            if (nlpResult.Topics.Contains("Email Security"))
+            {
+                response += "📧 For email security, always check sender authenticity, be wary of unexpected attachments, and use email filtering. ";
+            }
+
+            if (nlpResult.Topics.Contains("Network Security"))
+            {
+                response += "🔒 For network security, use VPNs on public WiFi, keep your router firmware updated, and use strong network passwords. ";
+            }
+
+            response += "\n\n💡 Consider creating a task to follow up on this security concern!";
+
+            return response;
+        }
+
+        private string HandleQuizResults()
+        {
+            mainTabControl.SelectedTab = activityTabPage;
+            return "I've switched you to the Activity Log tab where you can see your quiz results and performance history!";
+        }
+
+        private string ExtractTaskTitle(string message, NlpResult nlpResult)
         {
             var lowerMessage = message.ToLower();
 
-            if (lowerMessage.Contains("password"))
-                return "Strong passwords should be at least 12 characters long with a mix of letters, numbers, and symbols!";
+            // Common task patterns
+            var taskPatterns = new[]
+            {
+                @"remind me to (.+)",
+                @"don't forget to (.+)",
+                @"add task (?:to |for )?(.+)",
+                @"create (?:a )?(?:task|reminder) (?:to |for )?(.+)",
+                @"set (?:up )?(?:a )?reminder (?:to |for )?(.+)"
+            };
 
-            if (lowerMessage.Contains("phishing"))
-                return "Phishing emails try to steal your information. Never click suspicious links and always verify the sender!";
+            foreach (var pattern in taskPatterns)
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(lowerMessage, pattern);
+                if (match.Success && match.Groups.Count > 1)
+                {
+                    var taskText = match.Groups[1].Value.Trim();
 
-            if (lowerMessage.Contains("malware"))
-                return "Malware can harm your computer. Keep your antivirus updated and avoid downloading from untrusted sources!";
+                    // Clean up the extracted text
+                    if (taskText.Length > 0)
+                    {
+                        taskText = char.ToUpper(taskText[0]) + taskText.Substring(1);
+                    }
 
-            if (lowerMessage.Contains("vpn"))
-                return "VPNs encrypt your internet traffic and protect your privacy, especially on public Wi-Fi networks!";
+                    // Add cybersecurity context if not present
+                    if (!taskText.Contains("password") && !taskText.Contains("security") &&
+                        !taskText.Contains("update") && !taskText.Contains("cyber"))
+                    {
+                        // Check if it's a general cybersecurity task
+                        var securityKeywords = new[] { "backup", "scan", "patch", "firewall", "antivirus" };
+                        if (!securityKeywords.Any(keyword => taskText.Contains(keyword)))
+                        {
+                            taskText = $"Security: {taskText}";
+                        }
+                    }
 
-            return "That's a great cybersecurity question! I can help with passwords, phishing, malware, VPNs, and more. Try asking about specific topics!";
+                    return taskText;
+                }
+            }
+
+            // Fallback: check for detected phrases
+            var taskPhrases = nlpResult.DetectedPhrases.Where(p => p.StartsWith("Task Requests:")).ToList();
+            if (taskPhrases.Any())
+            {
+                var phrase = taskPhrases.First().Substring("Task Requests: ".Length);
+                return $"Follow up on: {phrase}";
+            }
+
+            return string.Empty;
+        }
+
+        private void DisplayNlpInsights(NlpResult nlpResult)
+        {
+            var insights = $"[{DateTime.Now:HH:mm:ss}] NLP Analysis Results:\n";
+            insights += $"================================\n\n";
+            insights += $"Original Message: \"{nlpResult.OriginalMessage}\"\n\n";
+            insights += $"🎯 Intent: {nlpResult.Intent} (Confidence: {nlpResult.Confidence:P1})\n\n";
+
+            if (nlpResult.Topics.Any())
+            {
+                insights += $"📋 Topics Detected:\n";
+                foreach (var topic in nlpResult.Topics)
+                {
+                    insights += $"   • {topic}\n";
+                }
+                insights += "\n";
+            }
+
+            if (nlpResult.Entities.Any())
+            {
+                insights += $"🔍 Entities Extracted:\n";
+                foreach (var entity in nlpResult.Entities)
+                {
+                    insights += $"   • {entity.Type}: \"{entity.Value}\" (pos: {entity.StartIndex}-{entity.StartIndex + entity.Length})\n";
+                }
+                insights += "\n";
+            }
+
+            if (nlpResult.DetectedPhrases.Any())
+            {
+                insights += $"💬 Phrases Detected:\n";
+                foreach (var phrase in nlpResult.DetectedPhrases)
+                {
+                    insights += $"   • {phrase}\n";
+                }
+                insights += "\n";
+            }
+
+            if (nlpResult.SuggestedActions.Any())
+            {
+                insights += $"💡 Suggested Actions:\n";
+                foreach (var action in nlpResult.SuggestedActions)
+                {
+                    insights += $"   • {action}\n";
+                }
+                insights += "\n";
+            }
+
+            insights += $"⏰ Processed at: {nlpResult.ProcessedAt:yyyy-MM-dd HH:mm:ss}\n";
+            insights += "\n" + new string('=', 50) + "\n\n";
+
+            // Add to insights display
+            nlpInsightsDisplay.AppendText(insights);
+            nlpInsightsDisplay.ScrollToCaret();
+        }
+
+        private void UpdateNlpStatus(string status)
+        {
+            nlpStatusLabel.Text = $"🤖 NLP Status: {status}";
+        }
+
+        private void AddUserMessage(string message)
+        {
+            var timestamp = DateTime.Now.ToString("HH:mm:ss");
+            var userText = $"[{timestamp}] 👤 {_userName}: {message}\n\n";
+
+            chatDisplay.SelectionStart = chatDisplay.TextLength;
+            chatDisplay.SelectionLength = 0;
+            chatDisplay.SelectionColor = Color.FromArgb(0, 123, 255);
+            chatDisplay.SelectionFont = new Font("Consolas", 10F, FontStyle.Bold);
+            chatDisplay.AppendText(userText);
+            chatDisplay.ScrollToCaret();
         }
 
         private void AddBotMessage(string message)
         {
-            AddMessage("Bot", message, Color.Blue);
+            var timestamp = DateTime.Now.ToString("HH:mm:ss");
+            var botText = $"[{timestamp}] 🤖 Bot: {message}\n\n";
 
-            // Speak message if TTS available
-            if (_ttsHelper != null)
+            chatDisplay.SelectionStart = chatDisplay.TextLength;
+            chatDisplay.SelectionLength = 0;
+            chatDisplay.SelectionColor = Color.FromArgb(40, 167, 69);
+            chatDisplay.SelectionFont = new Font("Consolas", 10F);
+            chatDisplay.AppendText(botText);
+            chatDisplay.ScrollToCaret();
+
+            // Speak the message if TTS is available
+            if (_ttsHelper != null && !string.IsNullOrEmpty(message))
             {
                 _ = Task.Run(async () => await _ttsHelper.SpeakAsync(message));
             }
         }
 
-        private void AddUserMessage(string message)
-        {
-            AddMessage(_userName ?? "User", message, Color.DarkGreen);
-        }
-
         private void AddSystemMessage(string message, Color color)
         {
-            AddMessage("System", message, color);
-        }
-
-        private void AddMessage(string sender, string message, Color color)
-        {
-            if (chatDisplay.InvokeRequired)
-            {
-                chatDisplay.Invoke(new Action(() => AddMessage(sender, message, color)));
-                return;
-            }
-
             var timestamp = DateTime.Now.ToString("HH:mm:ss");
+            var systemText = $"[{timestamp}] 🔧 System: {message}\n\n";
 
-            chatDisplay.SelectionColor = Color.Gray;
-            chatDisplay.AppendText($"[{timestamp}] ");
+            chatDisplay.SelectionStart = chatDisplay.TextLength;
+            chatDisplay.SelectionLength = 0;
             chatDisplay.SelectionColor = color;
-            chatDisplay.SelectionFont = new Font(chatDisplay.Font, FontStyle.Bold);
-            chatDisplay.AppendText($"{sender}: ");
-            chatDisplay.SelectionFont = new Font(chatDisplay.Font, FontStyle.Regular);
-            chatDisplay.AppendText($"{message}\n\n");
-
-            chatDisplay.SelectionStart = chatDisplay.Text.Length;
+            chatDisplay.SelectionFont = new Font("Consolas", 10F, FontStyle.Bold);
+            chatDisplay.AppendText(systemText);
             chatDisplay.ScrollToCaret();
         }
 
         private void ClearChat()
         {
             chatDisplay.Clear();
-            _activityLogger.LogActivity("Chat", "Chat cleared", "User cleared the chat history");
+            AddSystemMessage("Chat cleared - Enhanced NLP ready!", Color.FromArgb(220, 53, 69));
+            UpdateNlpStatus("Ready for new messages");
         }
 
         private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             _activityLogger.LogActivity("System", "Session ended", $"User {_userName} ended the session");
+            _audioPlayer?.Dispose();
             _ttsHelper?.Dispose();
-        }
-    }
-
-    /// <summary>
-    /// Standard activity logger for the entire application.
-    /// </summary>
-    public class ActivityLogger
-    {
-        private readonly List<string> _activities = new List<string>();
-
-        public void LogActivity(string category, string action, string details)
-        {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            var logEntry = $"[{timestamp}] {category}: {action} - {details}";
-            _activities.Add(logEntry);
-            Console.WriteLine(logEntry);
-        }
-
-        public void InitializeActivityInterface(Panel parentPanel)
-        {
-            parentPanel.Controls.Clear();
-
-            var titleLabel = new Label
-            {
-                Text = "📊 Activity Log & Chat History",
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(0, 123, 255),
-                AutoSize = true,
-                Location = new Point(10, 10)
-            };
-
-            var activityList = new ListBox
-            {
-                Location = new Point(10, 50),
-                Size = new Size(760, 400),
-                Font = new Font("Consolas", 9F),
-                BackColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle
-            };
-
-            // Populate with current activities
-            foreach (var activity in _activities.TakeLast(50))
-            {
-                activityList.Items.Add(activity);
-            }
-
-            var instructionLabel = new Label
-            {
-                Text = "💡 This log tracks all your interactions: chat messages, tasks created/completed, quiz attempts, and NLP detections.",
-                Location = new Point(10, 460),
-                Size = new Size(760, 40),
-                Font = new Font("Segoe UI", 9F),
-                ForeColor = Color.FromArgb(108, 117, 125)
-            };
-
-            parentPanel.Controls.AddRange(new Control[] { titleLabel, activityList, instructionLabel });
-        }
-
-        public List<string> GetRecentActivities(int count = 50)
-        {
-            return _activities.TakeLast(count).ToList();
         }
     }
 }
