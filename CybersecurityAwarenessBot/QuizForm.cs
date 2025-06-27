@@ -1,6 +1,7 @@
 ﻿// Start of file: QuizForm.cs
 // Purpose: Complete cybersecurity quiz system with immediate feedback and scoring
 // Implements Part 3 requirements: 15+ questions, true/false & multiple choice, immediate feedback, score tracking
+// FIXED: Proper display of feedback and explanations
 
 using System;
 using System.Collections.Generic;
@@ -67,7 +68,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.MultipleChoice,
                     Options = new[] { "6 characters", "8 characters", "12 characters", "16 characters" },
                     CorrectAnswer = 2, // 12 characters
-                    Explanation = "Cybersecurity experts recommend passwords of at least 12 characters for optimal security. Longer passwords are exponentially harder to crack."
+                    Explanation = "Cybersecurity experts recommend passwords of at least 12 characters for optimal security. Longer passwords are exponentially harder to crack using brute force attacks."
                 },
                 new QuizQuestion
                 {
@@ -76,7 +77,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.TrueFalse,
                     Options = new[] { "True", "False" },
                     CorrectAnswer = 1, // False
-                    Explanation = "Never reuse passwords! If one account gets compromised, all your accounts using that password become vulnerable. Use unique passwords for each account."
+                    Explanation = "Never reuse passwords! If one account gets compromised, all your accounts using that password become vulnerable. Use unique passwords for each account and consider a password manager."
                 },
                 new QuizQuestion
                 {
@@ -90,7 +91,7 @@ namespace CybersecurityAwarenessBot
                         "Fishing for compliments on social media"
                     },
                     CorrectAnswer = 1,
-                    Explanation = "Phishing is a social engineering attack where cybercriminals send fraudulent emails that appear to be from reputable sources to steal sensitive information."
+                    Explanation = "Phishing is a social engineering attack where cybercriminals send fraudulent emails that appear to be from reputable sources to steal sensitive information like passwords, credit card numbers, or personal data."
                 },
                 new QuizQuestion
                 {
@@ -99,7 +100,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.TrueFalse,
                     Options = new[] { "True", "False" },
                     CorrectAnswer = 1, // False
-                    Explanation = "Public Wi-Fi networks are inherently insecure. Never conduct sensitive activities like online banking on public Wi-Fi. Use a VPN if necessary."
+                    Explanation = "Public Wi-Fi networks are inherently insecure and can be monitored by attackers. Never conduct sensitive activities like online banking on public Wi-Fi. Use a VPN if necessary or wait for a secure connection."
                 },
                 new QuizQuestion
                 {
@@ -113,7 +114,7 @@ namespace CybersecurityAwarenessBot
                         "Automatic password generation"
                     },
                     CorrectAnswer = 1,
-                    Explanation = "Two-factor authentication adds an extra security layer by requiring a second form of verification (like a phone code) in addition to your password."
+                    Explanation = "Two-factor authentication adds an extra security layer by requiring a second form of verification (like a phone code, app notification, or hardware token) in addition to your password, making accounts much more secure."
                 },
                 new QuizQuestion
                 {
@@ -122,7 +123,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.TrueFalse,
                     Options = new[] { "True", "False" },
                     CorrectAnswer = 1, // False
-                    Explanation = "Antivirus is important but not sufficient alone. You need multiple layers: firewalls, safe browsing habits, software updates, and user awareness."
+                    Explanation = "Antivirus is important but not sufficient alone. You need multiple layers of protection: firewalls, safe browsing habits, regular software updates, strong passwords, and user awareness training."
                 },
                 new QuizQuestion
                 {
@@ -136,7 +137,7 @@ namespace CybersecurityAwarenessBot
                         "Change your password first, then reply"
                     },
                     CorrectAnswer = 2,
-                    Explanation = "Legitimate organizations never ask for passwords via email. Always delete such emails and report them as phishing attempts."
+                    Explanation = "Legitimate organizations never ask for passwords via email. Always delete such emails and report them as phishing attempts to your IT department or email provider. This is a common social engineering tactic."
                 },
                 new QuizQuestion
                 {
@@ -145,7 +146,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.TrueFalse,
                     Options = new[] { "True", "False" },
                     CorrectAnswer = 1, // False
-                    Explanation = "Software updates often include critical security patches that fix vulnerabilities. Delaying updates leaves your system exposed to known threats."
+                    Explanation = "Software updates often include critical security patches that fix vulnerabilities discovered since the last version. Delaying updates leaves your system exposed to known threats that criminals actively exploit."
                 },
                 new QuizQuestion
                 {
@@ -159,7 +160,7 @@ namespace CybersecurityAwarenessBot
                         "Creating user-friendly interfaces"
                     },
                     CorrectAnswer = 1,
-                    Explanation = "Social engineering exploits human psychology to manipulate people into divulging confidential information or performing actions that compromise security."
+                    Explanation = "Social engineering exploits human psychology to manipulate people into divulging confidential information or performing actions that compromise security. It's often more effective than technical attacks because it targets human nature rather than technology."
                 },
                 new QuizQuestion
                 {
@@ -168,7 +169,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.TrueFalse,
                     Options = new[] { "True", "False" },
                     CorrectAnswer = 1, // False
-                    Explanation = "Never click links from unknown sources. These could lead to malicious websites that steal information or install malware on your device."
+                    Explanation = "Never click links from unknown sources. These could lead to malicious websites that steal information, install malware on your device, or initiate premium SMS charges. Always verify the sender through independent means."
                 },
                 new QuizQuestion
                 {
@@ -182,7 +183,7 @@ namespace CybersecurityAwarenessBot
                         "To backup files automatically"
                     },
                     CorrectAnswer = 1,
-                    Explanation = "A firewall acts as a barrier between trusted internal networks and untrusted external networks, monitoring and controlling incoming and outgoing traffic."
+                    Explanation = "A firewall acts as a security barrier between trusted internal networks and untrusted external networks, monitoring and controlling incoming and outgoing network traffic based on predetermined security rules."
                 },
                 new QuizQuestion
                 {
@@ -191,7 +192,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.TrueFalse,
                     Options = new[] { "True", "False" },
                     CorrectAnswer = 1, // False
-                    Explanation = "While VPNs significantly improve privacy by encrypting traffic and masking IP addresses, they don't provide complete anonymity. Other tracking methods still exist."
+                    Explanation = "While VPNs significantly improve privacy by encrypting traffic and masking IP addresses, they don't provide complete anonymity. Other tracking methods like browser fingerprinting, cookies, and behavioral analysis can still identify users."
                 },
                 new QuizQuestion
                 {
@@ -205,7 +206,7 @@ namespace CybersecurityAwarenessBot
                         "Nothing, it's already safe"
                     },
                     CorrectAnswer = 2,
-                    Explanation = "Simply deleting files doesn't permanently remove them. Use secure wiping tools that overwrite data multiple times to prevent recovery of sensitive information."
+                    Explanation = "Simply deleting files doesn't permanently remove them from the hard drive. Use secure wiping tools that overwrite data multiple times to prevent recovery of sensitive information by data recovery software or forensic analysis."
                 },
                 new QuizQuestion
                 {
@@ -214,7 +215,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.TrueFalse,
                     Options = new[] { "True", "False" },
                     CorrectAnswer = 1, // False
-                    Explanation = "Everyone should backup important data! Ransomware, hardware failures, and accidents can happen to anyone. Follow the 3-2-1 backup rule for optimal protection."
+                    Explanation = "Everyone should backup important data! Ransomware attacks, hardware failures, theft, and natural disasters can happen to anyone. Follow the 3-2-1 backup rule: 3 copies of data, 2 different media types, 1 offsite backup."
                 },
                 new QuizQuestion
                 {
@@ -228,7 +229,7 @@ namespace CybersecurityAwarenessBot
                         "Software that protects against viruses"
                     },
                     CorrectAnswer = 0,
-                    Explanation = "Ransomware encrypts your files and demands payment for the decryption key. The best defense is regular backups and avoiding suspicious downloads/emails."
+                    Explanation = "Ransomware encrypts your files and demands payment (usually in cryptocurrency) for the decryption key. The best defenses are regular backups, updated software, email caution, and avoiding suspicious downloads."
                 },
                 new QuizQuestion
                 {
@@ -242,7 +243,7 @@ namespace CybersecurityAwarenessBot
                         "HyperText Transmission Protection Standard"
                     },
                     CorrectAnswer = 0,
-                    Explanation = "HTTPS (HyperText Transfer Protocol Secure) encrypts data between your browser and websites, providing secure communication over the internet."
+                    Explanation = "HTTPS (HyperText Transfer Protocol Secure) encrypts data between your browser and websites using SSL/TLS protocols, providing secure communication over the internet. Always look for HTTPS when entering sensitive information."
                 },
                 new QuizQuestion
                 {
@@ -251,7 +252,7 @@ namespace CybersecurityAwarenessBot
                     Type = QuestionType.TrueFalse,
                     Options = new[] { "True", "False" },
                     CorrectAnswer = 1, // False
-                    Explanation = "Public computers may have keyloggers or malware installed. Never use them for sensitive activities like banking, even if you log out properly."
+                    Explanation = "Public computers may have keyloggers, malware, or screen recording software installed that can capture your login credentials and personal information. Never use them for sensitive activities like banking, even if you log out properly."
                 },
                 new QuizQuestion
                 {
@@ -265,20 +266,21 @@ namespace CybersecurityAwarenessBot
                         "Forward it to friends for their opinion"
                     },
                     CorrectAnswer = 2,
-                    Explanation = "Always verify suspicious communications by contacting the organization directly using official contact information, not the information provided in the suspicious message."
+                    Explanation = "Always verify suspicious communications by contacting the organization directly using official contact information from their website or official documents, not the information provided in the suspicious message. This prevents falling for sophisticated phishing attempts."
                 }
             };
         }
 
         /// <summary>
         /// Initializes all UI components for the quiz form.
+        /// FIXED: Increased form size for proper feedback display.
         /// </summary>
         private void InitializeComponent()
         {
             this.Text = "🧠 Cybersecurity Knowledge Quiz";
-            this.Size = new Size(900, 700);
+            this.Size = new Size(900, 750); // Increased height from 700 to 750
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.MinimumSize = new Size(800, 600);
+            this.MinimumSize = new Size(800, 650); // Increased minimum height
             this.BackColor = Color.FromArgb(248, 249, 250);
 
             CreateHeaderSection();
@@ -345,14 +347,15 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Creates the main question display section.
+        /// Creates the main question display section with proper feedback display.
+        /// FIXED: Larger feedback area and proper text wrapping.
         /// </summary>
         private void CreateQuestionSection()
         {
             questionPanel = new Panel
             {
                 Location = new Point(20, 130),
-                Size = new Size(840, 400),
+                Size = new Size(840, 450), // Increased height for better feedback display
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White,
                 Visible = false
@@ -369,14 +372,14 @@ namespace CybersecurityAwarenessBot
             answersPanel = new Panel
             {
                 Location = new Point(20, 110),
-                Size = new Size(800, 200),
+                Size = new Size(800, 160), // Reduced height to make room for feedback
                 AutoScroll = true
             };
 
             submitAnswerButton = new Button
             {
                 Text = "Submit Answer",
-                Location = new Point(20, 320),
+                Location = new Point(20, 280),
                 Size = new Size(130, 40),
                 BackColor = Color.FromArgb(0, 123, 255),
                 ForeColor = Color.White,
@@ -388,7 +391,7 @@ namespace CybersecurityAwarenessBot
             nextQuestionButton = new Button
             {
                 Text = "Next Question",
-                Location = new Point(160, 320),
+                Location = new Point(160, 280),
                 Size = new Size(130, 40),
                 BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
@@ -397,22 +400,26 @@ namespace CybersecurityAwarenessBot
                 Visible = false
             };
 
-            // Feedback panel
+            // FIXED: Larger feedback panel with proper scrolling
             feedbackPanel = new Panel
             {
-                Location = new Point(310, 315),
-                Size = new Size(510, 50),
+                Location = new Point(20, 330), // Moved down and made larger
+                Size = new Size(800, 100), // Much larger feedback area
                 BackColor = Color.FromArgb(248, 249, 250),
                 BorderStyle = BorderStyle.FixedSingle,
-                Visible = false
+                Visible = false,
+                AutoScroll = true // Enable scrolling for long explanations
             };
 
             feedbackLabel = new Label
             {
                 Location = new Point(15, 15),
-                Size = new Size(480, 20),
+                Size = new Size(760, 70), // Larger label with proper sizing
                 Font = new Font("Segoe UI", 10F),
-                TextAlign = ContentAlignment.MiddleLeft
+                TextAlign = ContentAlignment.TopLeft, // Align to top-left for better readability
+                AutoSize = false, // Disable auto-size to control wrapping
+                MaximumSize = new Size(760, 0), // Enable text wrapping
+                AutoEllipsis = false // Don't truncate text
             };
 
             feedbackPanel.Controls.Add(feedbackLabel);
@@ -425,14 +432,14 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Creates the control section with start/restart buttons.
+        /// Creates the control section with start/restart buttons (adjusted for larger question panel).
         /// </summary>
         private void CreateControlSection()
         {
             startQuizButton = new Button
             {
                 Text = "🚀 Start Quiz",
-                Location = new Point(20, 550),
+                Location = new Point(20, 600), // Moved down to accommodate larger question panel
                 Size = new Size(150, 45),
                 BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
@@ -443,7 +450,7 @@ namespace CybersecurityAwarenessBot
             restartQuizButton = new Button
             {
                 Text = "🔄 Restart Quiz",
-                Location = new Point(190, 550),
+                Location = new Point(190, 600),
                 Size = new Size(150, 45),
                 BackColor = Color.FromArgb(255, 193, 7),
                 ForeColor = Color.Black,
@@ -456,13 +463,13 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Creates the results display section.
+        /// Creates the results display section (adjusted positioning).
         /// </summary>
         private void CreateResultsSection()
         {
             resultsPanel = new Panel
             {
-                Location = new Point(360, 540),
+                Location = new Point(360, 590), // Adjusted for larger layout
                 Size = new Size(500, 60),
                 Visible = false
             };
@@ -574,7 +581,8 @@ namespace CybersecurityAwarenessBot
         }
 
         /// <summary>
-        /// Submits the current answer and shows feedback.
+        /// Submits the current answer and shows feedback with proper text display.
+        /// FIXED: Dynamic text sizing and proper display of full explanations.
         /// </summary>
         private void SubmitAnswer_Click(object? sender, EventArgs e)
         {
@@ -607,6 +615,19 @@ namespace CybersecurityAwarenessBot
                 {
                     correctOption.ForeColor = Color.FromArgb(40, 167, 69);
                     correctOption.Font = new Font(correctOption.Font, FontStyle.Bold);
+                }
+            }
+
+            // FIXED: Properly size the label to fit the text
+            using (Graphics g = feedbackLabel.CreateGraphics())
+            {
+                var textSize = g.MeasureString(feedbackLabel.Text, feedbackLabel.Font, 760);
+                feedbackLabel.Size = new Size(760, (int)Math.Ceiling(textSize.Height) + 10);
+
+                // Adjust panel height if needed for very long explanations
+                if (textSize.Height > 70)
+                {
+                    feedbackPanel.Size = new Size(800, Math.Min(120, (int)Math.Ceiling(textSize.Height) + 30));
                 }
             }
 
