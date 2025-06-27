@@ -224,11 +224,8 @@ namespace CybersecurityAwarenessBot
                 ForeColor = Color.FromArgb(73, 80, 87)
             };
 
-            quizButton.Click += (s, e) =>
-            {
-                var quizForm = new QuizForm(_activityLogger);
-                quizForm.ShowDialog(this);
-            };
+            // FIXED: Proper quiz button click event
+            quizButton.Click += StartQuizButton_Click;
 
             quizPanel.Controls.AddRange(new Control[] { quizButton, quizDescription });
             quizTabPage.Controls.Add(quizPanel);
@@ -300,6 +297,30 @@ namespace CybersecurityAwarenessBot
             clearChatButton.Click += (s, e) => ClearChat();
             chatInput.KeyDown += ChatInput_KeyDown;
             this.FormClosing += MainForm_FormClosing;
+        }
+
+        // NEW: Dedicated quiz button click handler
+        private void StartQuizButton_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                // Log the quiz start
+                _activityLogger?.LogActivity("Quiz", "Quiz started from tab", "User clicked Start Quiz button");
+
+                // Create and show the quiz form
+                var quizForm = new QuizForm(_activityLogger);
+                quizForm.ShowDialog(this);
+
+                // Log completion
+                _activityLogger?.LogActivity("Quiz", "Quiz form closed", "User finished or closed quiz");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error starting quiz: {ex.Message}", "Quiz Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                _activityLogger?.LogActivity("Quiz", "Quiz error", $"Error starting quiz: {ex.Message}");
+            }
         }
 
         private async void SendButton_Click(object? sender, EventArgs e)
@@ -442,6 +463,10 @@ namespace CybersecurityAwarenessBot
                 return;
             }
 
+            // Check for quiz commands first
+            if (await ProcessQuizCommands(message))
+                return;
+
             // Process with Enhanced NLP
             var nlpResult = _nlpHandler.ProcessMessage(message);
 
@@ -455,6 +480,30 @@ namespace CybersecurityAwarenessBot
 
             AddBotMessage(response);
             _activityLogger.LogActivity("Chat", "Bot response", "Enhanced NLP response provided");
+        }
+
+        // UPDATED: Fixed ProcessQuizCommands method
+        private async Task<bool> ProcessQuizCommands(string message)
+        {
+            var lowerMessage = message.ToLower();
+            var quizKeywords = new[] { "quiz", "test", "questions", "challenge", "game", "start quiz" };
+
+            if (quizKeywords.Any(keyword => lowerMessage.Contains(keyword)))
+            {
+                mainTabControl.SelectedTab = quizTabPage;
+                AddBotMessage("Let's test your cybersecurity knowledge! I've switched you to the Quiz tab. Click the quiz button to begin!");
+
+                _activityLogger?.LogActivity("NLP", "Quiz command detected", message);
+
+                if (lowerMessage.Contains("start quiz") || lowerMessage.Contains("begin quiz"))
+                {
+                    // Automatically start the quiz
+                    StartQuizButton_Click(null, EventArgs.Empty);
+                }
+
+                return true;
+            }
+            return false;
         }
 
         private async Task<string> ProcessNlpResult(NlpResult nlpResult, string originalMessage)

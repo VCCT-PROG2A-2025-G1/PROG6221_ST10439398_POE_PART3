@@ -1,11 +1,6 @@
 ﻿// Start of file: QuizForm.cs
 // Purpose: Complete cybersecurity quiz system with immediate feedback and scoring
 // Implements Part 3 requirements: 15+ questions, true/false & multiple choice, immediate feedback, score tracking
-// Sources:
-// - RadioButton implementation: https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.radiobutton
-// - ProgressBar usage: https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.progressbar
-// - Quiz design patterns: https://en.wikipedia.org/wiki/Quiz
-// - Cybersecurity knowledge base: https://www.cisa.gov/cybersecurity-best-practices
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +21,7 @@ namespace CybersecurityAwarenessBot
         private int _currentQuestionIndex;
         private int _currentScore;
         private DateTime _quizStartTime;
-        private readonly SimpleActivityLogger? _activityLogger;
+        private readonly ActivityLogger? _activityLogger;
 
         // UI Controls
         private Label titleLabel = null!;
@@ -43,9 +38,9 @@ namespace CybersecurityAwarenessBot
         private Button startQuizButton = null!;
         private Button restartQuizButton = null!;
         private Panel resultsPanel = null!;
-        private ActivityLogger activityLogger;
 
-        public QuizForm(SimpleActivityLogger? activityLogger = null)
+        // FIXED: Single constructor that works with ActivityLogger
+        public QuizForm(ActivityLogger? activityLogger = null)
         {
             _questions = CreateCybersecurityQuestions();
             _attempts = new List<QuizAttempt>();
@@ -58,15 +53,8 @@ namespace CybersecurityAwarenessBot
             SetupEventHandlers();
         }
 
-        public QuizForm(ActivityLogger activityLogger)
-        {
-            this.activityLogger = activityLogger;
-        }
-
         /// <summary>
         /// Creates comprehensive cybersecurity quiz questions.
-        /// Source: CISA Cybersecurity Best Practices https://www.cisa.gov/cybersecurity-best-practices
-        /// Source: NIST Cybersecurity Framework https://www.nist.gov/cyberframework
         /// </summary>
         private List<QuizQuestion> CreateCybersecurityQuestions()
         {
@@ -503,7 +491,6 @@ namespace CybersecurityAwarenessBot
             _quizStartTime = DateTime.Now;
 
             // Shuffle questions for variety
-            // Source: Fisher-Yates shuffle algorithm https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
             for (int i = _questions.Count - 1; i > 0; i--)
             {
                 int j = _random.Next(i + 1);
@@ -536,7 +523,6 @@ namespace CybersecurityAwarenessBot
 
         /// <summary>
         /// Displays the current question with options.
-        /// Source: Dynamic RadioButton creation https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.radiobutton
         /// </summary>
         private void ShowCurrentQuestion()
         {
@@ -653,7 +639,6 @@ namespace CybersecurityAwarenessBot
 
         /// <summary>
         /// Shows the final quiz results with performance analysis.
-        /// Source: Performance analysis algorithms https://en.wikipedia.org/wiki/Performance_indicator
         /// </summary>
         private void ShowQuizResults()
         {
@@ -819,19 +804,6 @@ namespace CybersecurityAwarenessBot
         public double BestScore { get; set; }
         public DateTime LastAttemptDate { get; set; }
         public TimeSpan AverageTime { get; set; }
-    }
-
-    /// <summary>
-    /// Simple activity logger interface for quiz integration.
-    /// </summary>
-    public class SimpleActivityLogger
-    {
-        public void LogActivity(string category, string action, string details)
-        {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            var logEntry = $"[{timestamp}] {category}: {action} - {details}";
-            Console.WriteLine(logEntry);
-        }
     }
 }
 
